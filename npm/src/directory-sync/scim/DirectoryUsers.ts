@@ -31,6 +31,14 @@ export class DirectoryUsers {
   }
 
   public async create(directory: Directory, body: any): Promise<DirectorySyncResponse> {
+    if (directory.id === process.env.SCIM_DEBUG_LOG_DIR_ID) {
+      // Scoped to a single directory via env var so no unrelated SCIM traffic is logged.
+      // Temporary; revert once the debug session is complete.
+      console.log(
+        JSON.stringify({ msg: '[SCIM] POST /Users body', directoryId: directory.id, body })
+      );
+    }
+
     const userAttributes = extractStandardUserAttributes(body);
 
     // Check if the user already exists
