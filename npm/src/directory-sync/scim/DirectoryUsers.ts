@@ -77,6 +77,11 @@ export class DirectoryUsers {
   }
 
   public async update(directory: Directory, user: User, body: any): Promise<DirectorySyncResponse> {
+    // Temporary debug (LEV-956): log every PUT /Users body. Revert with the rest of the debug patch.
+    console.log(
+      JSON.stringify({ msg: '[SCIM] PUT /Users body', directoryId: directory.id, userId: user.id, body })
+    );
+
     const userAttributes = extractStandardUserAttributes(body);
 
     const { data: updatedUser } = await this.users.update(user.id, {
@@ -94,6 +99,11 @@ export class DirectoryUsers {
   }
 
   public async patch(directory: Directory, user: User, body: any): Promise<DirectorySyncResponse> {
+    // Temporary debug (LEV-956): log every PATCH /Users body. Revert with the rest of the debug patch.
+    console.log(
+      JSON.stringify({ msg: '[SCIM] PATCH /Users body', directoryId: directory.id, userId: user.id, body })
+    );
+
     const { Operations } = body as { Operations: UserPatchOperation[] };
 
     let attributes: Partial<User> = {};
