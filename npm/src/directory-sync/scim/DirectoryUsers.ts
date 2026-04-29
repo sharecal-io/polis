@@ -31,13 +31,12 @@ export class DirectoryUsers {
   }
 
   public async create(directory: Directory, body: any): Promise<DirectorySyncResponse> {
-    if (directory.id === process.env.SCIM_DEBUG_LOG_DIR_ID) {
-      // Scoped to a single directory via env var so no unrelated SCIM traffic is logged.
-      // Temporary; revert once the debug session is complete.
-      console.log(
-        JSON.stringify({ msg: '[SCIM] POST /Users body', directoryId: directory.id, body })
-      );
-    }
+    // Temporary debug: log every POST /Users body to confirm what Okta sends in
+    // emails[0].value during email-change SCIM events (LEV-956). Revert once the
+    // debug session is complete. Only deployed to auditlog-next.
+    console.log(
+      JSON.stringify({ msg: '[SCIM] POST /Users body', directoryId: directory.id, body })
+    );
 
     const userAttributes = extractStandardUserAttributes(body);
 
