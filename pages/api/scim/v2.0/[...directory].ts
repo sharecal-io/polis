@@ -25,7 +25,38 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     },
   };
 
+  // Temporary debug (LEV-956): log every SCIM /Users request + response at the route boundary.
+  // Captures method, resourceId, query, full body, response status + data, and duration.
+  // Scoped to /Users only (not /Groups). Revert when debug session is complete. Only deployed to auditlog-next.
+  const reqStartedAt = Date.now();
+  if (path === 'Users') {
+    console.log(
+      JSON.stringify({
+        msg: '[SCIM] request',
+        method,
+        directoryId,
+        resourceId,
+        query: request.query,
+        body: request.body,
+      })
+    );
+  }
+
   const { status, data } = await directorySyncController.requests.handle(request);
+
+  if (path === 'Users') {
+    console.log(
+      JSON.stringify({
+        msg: '[SCIM] response',
+        method,
+        directoryId,
+        resourceId,
+        status,
+        durationMs: Date.now() - reqStartedAt,
+        data,
+      })
+    );
+  }
 
   return res.status(status).json(data);
 }
