@@ -33,10 +33,26 @@ export class DirectoryUsers {
   public async create(directory: Directory, body: any): Promise<DirectorySyncResponse> {
     const userAttributes = extractStandardUserAttributes(body);
 
-    // Check if the user already exists
+    // Check if a user already exists with the same email index
     const { data: users } = await this.users.search(userAttributes.email, directory.id);
 
     if (users && users.length > 0) {
+      // [LEV-956] Email is not a stable identity for dedup. Two real-world cases hit this
+      // branch with no genuine duplicate: (a) Okta-with-AD email-change rename — the new
+      // POST carries new userName but Okta's emails[0].value can lag the rename, so the
+      // create matches the just-deactivated old record; (b) Entra case-mismatch — a new
+      // POST whose userName differs only in casing from the stored email matches the same
+      // index entry and re-provisions forever. In both cases the IdP's stable user ID
+      // (externalId) is unchanged. Upsert when externalIds agree; only 409 on a genuine
+      // collision (different externalIds attempting the same email).
+      const matched = users[0];
+      const matchedExternalId = matched?.raw?.externalId;
+      const incomingExternalId = body.externalId;
+
+      if (incomingExternalId && matchedExternalId && incomingExternalId === matchedExternalId) {
+        return this.update(directory, matched, body);
+      }
+
       return this.respondWithError({ code: 409, message: 'User already exists' });
     }
 
