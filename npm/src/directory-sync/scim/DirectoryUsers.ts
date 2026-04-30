@@ -44,6 +44,16 @@ export class DirectoryUsers {
     const { data: users } = await this.users.search(userAttributes.email, directory.id);
 
     if (users && users.length > 0) {
+      // Temporary debug (LEV-956): log the matched existing user so we can see WHICH stored
+      // record collided and on what email. Revert with the rest of the debug patch.
+      console.log(
+        JSON.stringify({
+          msg: '[SCIM] POST /Users 409 conflict',
+          directoryId: directory.id,
+          searchedEmail: userAttributes.email,
+          matchedUsers: users.map((u: any) => ({ id: u.id, email: u.email, active: u.active, raw: u.raw })),
+        })
+      );
       return this.respondWithError({ code: 409, message: 'User already exists' });
     }
 
