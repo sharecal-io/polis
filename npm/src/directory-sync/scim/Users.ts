@@ -11,7 +11,13 @@ export class Users extends Base {
 
   // Create a new user
   public async create(user: User & { directoryId: string }): Promise<Response<User>> {
-    const { directoryId, id, email } = user;
+    const { directoryId, id } = user;
+    // Index on the SCIM userName (RFC 7643: uniqueness=server, caseExact=false)
+    // rather than user.email (uniqueness=none). userName is the canonical unique
+    // identifier per spec; emails[0].value can be unstable across IdP renames and
+    // its uniqueness is not guaranteed by the standard.
+    const indexValue = (((user.raw as any)?.userName as string | undefined) ?? user.email ?? '')
+      .toLowerCase();
 
     try {
       await this.store('users').put(
@@ -19,7 +25,7 @@ export class Users extends Base {
         user,
         {
           name: indexNames.directoryIdUsername,
-          value: keyFromParts(directoryId, email),
+          value: keyFromParts(directoryId, indexValue),
         },
         {
           name: indexNames.directoryId,
@@ -153,9 +159,11 @@ export class Users extends Base {
   // Search users by userName
   public async search(userName: string, directoryId: string): Promise<Response<User[]>> {
     try {
+      // userName is caseExact=false per RFC 7643; normalize before lookup so the
+      // hash matches the lowercased index built in create().
       const { data: users } = await this.store('users').getByIndex({
         name: indexNames.directoryIdUsername,
-        value: keyFromParts(directoryId, userName),
+        value: keyFromParts(directoryId, (userName ?? '').toLowerCase()),
       });
 
       return { data: users, error: null };
