@@ -87,6 +87,7 @@ export const parseUserPatchRequest = (operation: UserPatchOperation) => {
 
   const attributesMap = {
     active: 'active',
+    userName: 'userName',
     'name.givenName': 'first_name',
     'name.familyName': 'last_name',
     'emails[type eq "work"].value': 'email',
@@ -150,6 +151,10 @@ export const extractStandardUserAttributes = (body: any) => {
     first_name: name && 'givenName' in name ? name.givenName : '',
     last_name: name && 'familyName' in name ? name.familyName : '',
     email: emails && emails.length > 0 ? emails[0].value : userName,
+    // Store userName top-level (original casing) so the RFC 7643 unique
+    // attribute is readable without digging into the raw payload. The
+    // directoryIdUsername index lowercases separately in Users.create()/update().
+    userName,
     active: 'active' in body ? active : true,
     id: userId || '', // For non-SCIM providers, the id will exist in the body
   };

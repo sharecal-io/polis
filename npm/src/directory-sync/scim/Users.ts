@@ -54,6 +54,9 @@ export class Users extends Base {
    *         email:
    *           type: string
    *           description: Email address
+   *         userName:
+   *           type: string
+   *           description: SCIM userName from the Identity Provider
    *         active:
    *           type: boolean
    *           description: Indicates whether the user is active or not

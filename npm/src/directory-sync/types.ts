@@ -111,6 +111,9 @@ export interface WebhookEventLog {
 export type User = {
   id: string;
   email: string;
+  // SCIM userName (RFC 7643: uniqueness=server), stored in its original casing.
+  // Optional: legacy records and non-SCIM (Google) provider users lack it.
+  userName?: string;
   first_name: string;
   last_name: string;
   active: boolean;
