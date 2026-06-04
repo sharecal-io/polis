@@ -18,6 +18,7 @@
   ],
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
+    "db:backfill:username-index": "cross-env ts-node --transpile-only scripts/backfill-username-index.ts",
     "db:migration:generate:postgres": "cross-env ts-node --transpile-only ../node_modules/typeorm/cli.js migration:generate -d typeorm.ts  migration/postgres/pg_${MIGRATION_NAME}",
     "db:migration:generate:cockroachdb": "cross-env DB_TYPE=cockroachdb DB_URL=postgresql://root@localhost:26257/postgres?sslmode=disable ts-node --transpile-only ../node_modules/typeorm/cli.js migration:generate -d typeorm.ts  migration/cockroachdb/pg_${MIGRATION_NAME}",
     "db:migration:generate:mysql": "cross-env DB_TYPE=mysql DB_URL=mysql://root:mysql@localhost:3307/mysql ts-node --transpile-only ../node_modules/typeorm/cli.js migration:generate -d typeorm.ts migration/mysql/ms_${MIGRATION_NAME}",

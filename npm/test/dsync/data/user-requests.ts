@@ -78,6 +78,27 @@ const requests = {
     };
   },
 
+  // PATCH /Users/{userId} - rename userName
+  patchUserName: (directory: Directory, userId: string, userName: string): DirectorySyncRequest => {
+    return {
+      method: 'PATCH',
+      body: {
+        Operations: [
+          {
+            op: 'replace',
+            path: 'userName',
+            value: userName,
+          },
+        ],
+      },
+      directoryId: directory.id,
+      resourceType: 'users',
+      resourceId: userId,
+      apiSecret: directory.scim.secret,
+      query: {},
+    };
+  },
+
   // GET /Users/
   getAll: (directory: Directory): DirectorySyncRequest => {
     return {
